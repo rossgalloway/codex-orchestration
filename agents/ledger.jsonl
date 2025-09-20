@@ -4,3 +4,4 @@
 {"v": 1, "ts": "2025-09-20T03:07:43Z", "type": "progress", "agent": "codex", "msg": "Said hello to user and recording progress entry."}
 {"v": 1, "ts": "2025-09-20T03:07:57Z", "type": "error", "agent": "coordinator", "msg": "spawn_failed", "data": {"raw": ""}}
 {"v": 1, "ts": "2025-09-20T03:28:01Z", "type": "progress", "agent": "codex", "msg": "Said hello to user and noted progress."}
+{"v": 1, "ts": "2025-09-20T03:28:13Z", "type": "spawn", "cid": "local-1758338893-8766", "agent": "coordinator", "cwd": "/home/ross/code/codex-orchestration", "msg": "spawn(local)", "data": {"raw": ""}}
