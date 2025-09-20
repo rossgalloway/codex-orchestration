@@ -10,14 +10,11 @@ else
 fi
 command -v node >/dev/null || { echo "Node.js required"; exit 1; }
 if [[ "$server_cmd" != /* ]]; then
-  if [[ -n "${CODEX_BIN:-}" ]]; then
-    server_cmd="$CODEX_BIN"
-  else
-    server_cmd="$(command -v "$server_cmd" 2>/dev/null || true)"
-  fi
+  server_cmd="${CODEX_BIN:-$(command -v "$server_cmd" 2>/dev/null || true)}"
 fi
+server_cmd="$(readlink -f "$server_cmd" 2>/dev/null || echo "$server_cmd")"
 if [[ -z "${server_cmd:-}" || ! -x "$server_cmd" ]]; then
-  echo "Cannot find executable for codex server: '$server_cmd'" >&2
+  echo "Cannot exec codex server: '$server_cmd'" >&2
   exit 1
 fi
 npx --yes @modelcontextprotocol/inspector@latest --cli \

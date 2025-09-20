@@ -28,8 +28,10 @@ def write_event(args: argparse.Namespace) -> None:
 
     os.makedirs(os.path.dirname(args.path), exist_ok=True)
     filtered = {k: v for k, v in event.items() if v not in (None, "")}
+    line = json.dumps(filtered)
     with open(args.path, "a", encoding="utf-8") as handle:
-        handle.write(json.dumps(filtered) + "\n")
+        handle.write(line + "\n")
+        handle.flush()
 
 def status(args: argparse.Namespace) -> None:
     latest = {}

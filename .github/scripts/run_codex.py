@@ -1,15 +1,28 @@
 #!/usr/bin/env python3
 import json
+import os
 import subprocess
 import sys
+
+LEDGER_HOME = os.environ.get("LEDGER_HOME", os.path.expanduser("~/code/codex-orchestration"))
+MCP_CALL = os.path.join(LEDGER_HOME, "tools", "mcp_call.sh")
+CODEX_BIN = os.environ.get("CODEX_BIN") or subprocess.run(
+    ["bash", "-lc", "command -v codex"],
+    text=True,
+    capture_output=True,
+).stdout.strip()
 
 def run_command(invocation, **kwargs):
     return subprocess.run(invocation, text=True, capture_output=True, **kwargs)
 
 def codex_call(payload, tool):
-    process = run_command(["codex", "mcp", "call", tool], input=json.dumps(payload))
-    if process.returncode != 0 and not process.stdout:
-        return process.stderr
+    env = os.environ.copy()
+    payload_json = json.dumps(payload)
+    if CODEX_BIN:
+        cmd = [MCP_CALL, CODEX_BIN, tool, payload_json]
+    else:
+        cmd = [MCP_CALL, "codex", tool, payload_json]
+    process = run_command(cmd, env=env)
     return process.stdout or process.stderr
 
 def handle_spawn(args):

@@ -16,7 +16,19 @@ jobs:
       (github.event_name == 'issues' && contains(github.event.issue.body, '@codex'))
     runs-on: self-hosted
     steps:
+      - name: Ensure jq present (self-hosted)
+        run: |
+          command -v jq >/dev/null || (echo "jq missing on runner" && exit 1)
       - uses: actions/checkout@v4
+      - name: Allow only owner
+        run: |
+          WHO="${{ github.event.comment.user.login || github.event.issue.user.login }}"
+          ALLOWED="rossgalloway"
+          if [ "$WHO" != "$ALLOWED" ]; then
+            echo "Not allowed: $WHO"
+            printf '{"body":"⛔ Not allowed for user %s."}\n' "$WHO" > result.json
+            exit 0
+          fi
       - name: Parse command
         id: parse
         run: |
@@ -25,12 +37,14 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --issue "${{ github.event.issue.number || github.event.comment.issue_url##*/ }}" \
             > cmd.json
-      - name: Run Codex command
+      - name: Run Codex command (Inspector path)
         id: codex
         run: |
           python3 .github/scripts/run_codex.py cmd.json > result.json || echo "{}" > result.json
-      - name: Post reply
-        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+      - name: Post reply (always)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          body=$(jq -r '.body // "Codex ran with no output."' result.json)
+          body=$(jq -r '.body // "Codex ran with no output."' result.json 2>/dev/null || echo "workflow failed without body")
           gh issue comment ${{ github.event.issue.number || github.event.comment.issue_url##*/ }} --body "$body"
